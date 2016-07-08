@@ -1,7 +1,8 @@
 var MongoClient = require('mongodb').MongoClient
 , assert = require('assert');
 // Connection URL
-var url = "mongodb://192.168.10.9:27017/VC16_MC3";
+// var url = "mongodb://192.168.10.9:27017/VC16_MC3";
+var url = "mongodb://127.0.0.1:27017/local";
 var logger;
 
 function initialize(v_logger){
@@ -13,8 +14,7 @@ function insert(data, v_sheet, callback){
 	// Use connect method to connect to the Server
 	MongoClient.connect(url, function(err, db) {
 		assert.equal(null, err);
-		console.log("      DB: Connected correctly to server");
-		logger.log("      DB: Connected correctly to server");
+		// console.log("      DB: Connected correctly to server");
 		var collection = db.collection(v_sheet);
 		collection.insert(data, function(){
 			callback();
@@ -46,8 +46,11 @@ function clear(callback){
 			callback();
 			db.close();
 		});
-		// collection = db.collection("HVAC");
-		// collection.remove({});
+		collection = db.collection("fixedprox");
+		collection.remove({}, function(){
+			callback();
+			db.close();
+		});
 		// collection = db.collection("HVAC");
 		// collection.remove({});
 	});
@@ -88,12 +91,12 @@ function clearAll(db, callback){
 function query(v_sheet, v_conditions, callback){
 	MongoClient.connect(url, function(err, db) {
 		assert.equal(null, err);
-		console.log("      DB: Connected correctly to server");
+		// console.log("      DB: Connected correctly to server");
 		var collection = db.collection(v_sheet);
 		collection.find(v_conditions).toArray(function(err, docs) {
 			assert.equal(err, null);
-			console.log("      DB: The following records are found");
-			console.log(docs);
+			// console.log("      DB: The following records are found");
+			// console.log(docs);
 			callback(docs);
 			db.close();
 		});

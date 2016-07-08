@@ -52,17 +52,33 @@
                 // Update Data
             },
 
-            initStream: function(v_stream){
+            initStream: function(){
+                var v_stream = new WebSocket('ws://127.0.0.1:8888');
                 v_stream.onopen = function(e){
                     v_stream.send(JSON.stringify({state: "start", data: null}));
                 };
+                v_stream.onclose = function(e){
+                    console.log("Connection closed!");
+                }
                 v_stream.onmessage = function (e){
                     var t_d = JSON.parse(e.data);
                     switch(t_d.state){
+                        case "stream":
+                            console.log(t_d.state, t_d.data);
+                        break;
+                        case "history":
+                            console.log(t_d.state, t_d.data);
+                        break;
+                        case "control":
+                            console.log(t_d.state, t_d.data);
+                        break;
                         case "chooseID":
                             var tt_d = t_d.data;
-                            console.log(tt_d.msg, tt_d.streamIds);
+                            console.log(tt_d.msg, tt_d.streamIds, tt_d.timeleft);
                             v_stream.send(JSON.stringify({state: "chooseID", data: tt_d.streamIds[0]}));
+                        break;
+                        case "error":
+                            console.log(t_d.state, t_d.data);
                         break;
                         default:
                             console.log(t_d.state, t_d.data);
