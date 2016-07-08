@@ -67,7 +67,7 @@ define([
                     case "Stream":
                     var t_stream = Config.get("stream");
                     if(!t_stream){
-                        t_stream = Datacenter.initStream(new WebSocket('ws://localhost:8888'));
+                        t_stream = Datacenter.initStream(new WebSocket('ws://192.168.10.9:8888'));
                         Config.set("stream", t_stream);
                     }
                     break;
