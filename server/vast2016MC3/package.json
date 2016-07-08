@@ -1,0 +1,23 @@
+{
+  "name": "vast2016-client",
+  "version": "0.1.0",
+  "description": "Client for the 2016 VAST Challenge",
+  "contributors": [ 
+    {
+      "name": "Zachary Wemlinger",
+      "email": "zachary.wemlinger@pnnl.gov"
+    } ,
+    {
+      "name": "Joe Bruce",
+      "email": "joe.bruce@pnnl.gov"
+    } 
+  ],
+  "main": "./client.js",
+  "dependencies" : {
+    "ws"   :  "*"
+    },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.10"
+  }
+}

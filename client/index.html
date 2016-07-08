@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Framework</title>
+    <link rel="stylesheet/less" href="css/style.less">
+    <script>
+        var less = {
+                env: 'development'
+        };
+
+        function configEvent(v_sign)
+        {
+            Datacenter.hideColorPicker(v_sign);
+        }
+
+        function changeColor(color)
+        {
+            Datacenter.changeColor('#' + color);
+        }
+
+        function titleEvent(v_sign)
+        {
+            Datacenter.hideTitlePicker(v_sign);
+        }
+    </script>
+    <script src="bower_components/less/dist/less.min.js"></script>
+    <script data-main="js/main" src="bower_components/requirejs/require.js"></script>
+</head>
+<body >
+    <nav id="Navbar" class="navbar navbar-inverse navbar-static" role="navigation">
+<!--         <div class="navbar-header">
+            <a class="navbar-brand" href="#">Viewpoint Changer</a>
+        </div> -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Framework
+            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-left" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;Open <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li id="Data" class="dataLoader"><a> Data</a></li>
+                        <li id="Stream" class="dataLoader"><a> Stream</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div id = "rootApp" class="container">
+    </div>
+</body>
+</html>
