@@ -1,4 +1,4 @@
-var root = __dirname, glbTest = true;
+var root = __dirname, glbTest = false;
 var database = require("./server/database/database.js"), logger = require("./server/logger.js").initialize();
 database.initialize(logger);
 var handle = require("./server/handler/handler").initialize(root, database, logger);

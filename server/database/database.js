@@ -1,8 +1,8 @@
 var MongoClient = require('mongodb').MongoClient
 , assert = require('assert');
 // Connection URL
-// var url = "mongodb://192.168.10.9:27017/VC16_MC3";
-var url = "mongodb://127.0.0.1:27017/local";
+var url = "mongodb://192.168.10.9:27017/VC16_MC3";
+// var url = "mongodb://127.0.0.1:27017/local";
 var logger;
 
 function initialize(v_logger){
@@ -43,12 +43,22 @@ function clear(callback){
 		var collection;
 		collection = db.collection("HVAC");
 		collection.remove({}, function(){
-			callback();
+			callback("HVAC");
 			db.close();
 		});
 		collection = db.collection("fixedprox");
 		collection.remove({}, function(){
-			callback();
+			callback("fixedprox");
+			db.close();
+		});
+		collection = db.collection("mobileprox");
+		collection.remove({}, function(){
+			callback("mobileprox");
+			db.close();
+		});
+		collection = db.collection("messages");
+		collection.remove({type: "messages"}, function(){
+			callback("messages");
 			db.close();
 		});
 		// collection = db.collection("HVAC");

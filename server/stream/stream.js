@@ -1,5 +1,5 @@
 var wsServer = require("ws").Server, uid = "chufan.lai.1990@gmail.com";
-var testClient = require('../vast2016MC3/testClient').initialize(), stream, timer;
+var testClient = require('../vast2016MC3/testClient').initialize(), stream, timer, t_mins = 1, choiceTimer;
 
 function initialize (v_server, v_db, logger, v_test) {
 	var streamServer = new wsServer({server: v_server}), messageHandler, Timeleft = 60;
@@ -18,15 +18,25 @@ function initialize (v_server, v_db, logger, v_test) {
 							d.timeleft = Timeleft + " mins";
 							streamServer.broadcast(JSON.stringify({state: "chooseID", data: d}));
 							streamServer.startTimer(d);
+							streamServer.saveData({type: "messages", data: d, time: Date(), IDList: true});
 						}else if(d.state === "BAD"){// Uh oh - handle the error
 							logger.log("error: " + d);
 							streamServer.broadcast(JSON.stringify({state: "error", data: d}));
+							if((d.msg.indexOf("invalid stream") >=0) || (d.msg.indexOf("request not permitted at this time") >=0)){
+								streamServer.choice = null;
+								streamServer.IDList.choice = null;
+								streamServer.broadcast(JSON.stringify({state: "chooseID", data: streamServer.IDList}));
+								streamServer.startTimer(streamServer.IDList);
+								clearTimeout(choiceTimer);
+							}
+							streamServer.saveData({type: "messages", data: d, time: Date()});
 						}
 					});
 					break;
 					default:
 						logger.log(state + ": " + message.body);
 						streamServer.broadcast(JSON.stringify({state: "control", data: message.body}));
+						streamServer.saveData({type: "messages", data: message.body, time: Date()});
 					break;
 				}
 			}else{// data message
@@ -34,7 +44,7 @@ function initialize (v_server, v_db, logger, v_test) {
 				streamServer.saveData(message);
 				streamServer.broadcast(JSON.stringify({state: "stream", data: message}));
 			}
-		}		
+		}
 		v_ws.on('message', function incoming(message) {
 			var t_message = JSON.parse(message), self = this;
 			console.log('received: ' + t_message.data);
@@ -42,9 +52,9 @@ function initialize (v_server, v_db, logger, v_test) {
 				case "start":
 				if(!stream){
 					stream = testClient.newStream(messageHandler, v_test);
-					if(v_test){
-						v_db.clear(function(){
-							console.log("Database reset!");
+					if(false){
+						v_db.clear(function(v_sheet){
+							console.log("Collection " + v_sheet + " reset!");
 						});
 					}
 				}else{
@@ -58,19 +68,36 @@ function initialize (v_server, v_db, logger, v_test) {
 						self.send(JSON.stringify({state: "history", data: {type: "mobileprox", data: v_data}}));
 					});
 				}
+				v_db.query("messages", {"IDList": {$exists: true}}, function(v_data){
+					if(!streamServer.IDList){
+						if(v_data.length > 0){
+							streamServer.IDList = v_data[v_data.length - 1].data;
+						}
+						self.send(JSON.stringify({state: "history", data: {type: "IDList", data: streamServer.IDList||{}}}));
+					}else{
+						self.send(JSON.stringify({state: "history", data: {type: "IDList", data: streamServer.IDList||{}}}));
+					}
+				});
 				break;
 				case "chooseID":
-					if(!streamServer.choice){
+					if(!streamServer.choice && Timeleft >=0){
 						logger.log("Choose: " + t_message.data);
 						streamServer.choice = t_message.data;
 						streamServer.upWS.send(JSON.stringify({
 							uid: uid,
 							streamId: t_message.data,
 						}));
-						streamServer.broadcast(JSON.stringify({state: "control", data: "ID chosen: " + t_message.data}));
-						clearInterval(timer);
-						Timeleft = 0;
+						choiceTimer = setTimeout(function(){
+							streamServer.broadcast(JSON.stringify({state: "control", data: "ID chosen: " + t_message.data}));
+							streamServer.IDList.choice = t_message.data;
+							clearInterval(timer);
+							streamServer.saveData({type: "messages", data: streamServer.IDList, time: Date(), IDList: true});
+						}, 5000);
 					}else{
+						streamServer.upWS.send(JSON.stringify({
+							uid: uid,
+							streamId: t_message.data,
+						}));
 						self.send(JSON.stringify({state: "control", data: "ID chosen: " + streamServer.choice}));
 					}
 				break;
@@ -88,21 +115,24 @@ function initialize (v_server, v_db, logger, v_test) {
 	};
 
 	streamServer.saveData = function(v_data){
-		var t_sheet, t_time;
+		var t_sheet;//, t_time;
 		switch(v_data.type){
+			case "messages":
+				t_sheet = "messages";
+			break;
 			case "fixed-prox":
-				t_time = "datetime";
+				// t_time = "datetime";
 				t_sheet = "fixedprox";
 			break;
 			case "mobile-prox":
-				t_time = "datetime";
+				// t_time = "datetime";
 				t_sheet = "mobileprox";
-			default: 
-				t_time = "Date/Time";
+			default:
+				// t_time = "Date/Time";
 				t_sheet = "HVAC"
 			break;
 		}
-		v_data[t_time] = new Date(v_data[t_time]).getTime();
+		// v_data[t_time] = new Date(v_data[t_time]).getTime();
 		v_db.insert([v_data], t_sheet, function(){
 			console.log("Data insert!");
 		});
@@ -112,16 +142,16 @@ function initialize (v_server, v_db, logger, v_test) {
 		var self = this;
 		self.IDList = v_d;
 		timer = setInterval(function(){
-			Timeleft = Timeleft - 5;
+			Timeleft = Timeleft - t_mins;
 			self.IDList.timeleft = Timeleft + " mins";
 			self.broadcast(JSON.stringify({state: "chooseID", data: self.IDList}));
-		}, 300000);
+		}, 60000 * t_mins);
 	}
 
 	streamServer.packData = function(v_data, v_time){
 		var self = this;
 		v_data.sort(function(a,b){
-			return a[v_time] - b[v_time];
+			return new Date(a[v_time]).getTime() - new Date(b[v_time]).getTime();
 		});
 		return v_data;
 	}

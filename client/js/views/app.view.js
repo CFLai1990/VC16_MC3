@@ -64,13 +64,18 @@ define([
             $(".dataLoader").on("click",function(){
                 var t_id = $(this).attr("id");
                 switch(t_id){
-                    case "Stream":
+                    case "StreamOpen":
                     var t_stream = Config.get("stream");
                     if(!t_stream){
                         t_stream = Datacenter.initStream();
                         Config.set("stream", t_stream);
-                    }else{
+                    }
+                    break;
+                    case "StreamClose":
+                    var t_stream = Config.get("stream");
+                    if(t_stream){
                         t_stream.send(JSON.stringify({state: "close", data: null}));
+                        Config.set("stream", null);
                     }
                     break;
                     default:

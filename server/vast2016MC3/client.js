@@ -27,7 +27,7 @@ module.exports = function(uid, vastURL, messageHandler, v_test) {
 		// set test to true when running on the test stream
 		// set test to false, or remove it, when ready to run the competition stream
 		var test = true;
-		ws.send(JSON.stringify({"uid": uid, test: (test || v_test)}));
+		ws.send(JSON.stringify({"uid": uid, test: false}));
 
 		if(messageHandler)
 		{
